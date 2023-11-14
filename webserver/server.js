@@ -16,10 +16,9 @@ app.use(express.raw({type: 'image/jpeg', limit: '10mb'}));
 app.get('/capture', async (req, res) => {
   try {
     // Send capture command to ESP32-CAM
-    await axios.get('http://172.20.10.4/saved-photo');
 
     // Retrieve the captured image from ESP32-CAM
-    const photoResponse = await axios.get('http://172.20.10.4/saved-photo', { responseType: 'arraybuffer' });
+    const photoResponse = await axios.get('http://<IP-ADDRESS>/saved-photo', { responseType: 'arraybuffer' });
 
     // Save the image and respond
     fs.writeFileSync('public/photo.jpg', photoResponse.data);
@@ -30,15 +29,32 @@ app.get('/capture', async (req, res) => {
   }
 });
 
-app.get('/analyze-photo', async (req, res) => {
+app.get('/objectscan', async (req, res) => {
   try {
-    const results1 = await client.labelDetection('public/photo.jpg');
-    const results2 = await client.faceDetection('public/photo.jpg');
-    const combinedResults = {
-        labels: results1[0].labelAnnotations,
-        faces: results2[0].faceAnnotations
-    };
-    res.json(combinedResults);
+    const results = await client.labelDetection('public/photo.jpg');
+    const filteredResults = results[0].labelAnnotations.map(label => label.description)
+    res.json(filteredResults);
+  } catch (error) {
+      console.error('ERROR:', error);
+      res.status(500).send(error.message);
+  }
+});
+
+app.get('/emotionscan', async (req, res) => {
+  try {
+    const results = await client.faceDetection('public/photo.jpg');
+    const filteredResults = results[0].faceAnnotations.map(face => {
+          return {
+              joyLikelihood: face.joyLikelihood,
+              sorrowLikelihood: face.sorrowLikelihood,
+              angerLikelihood: face.angerLikelihood,
+              surpriseLikelihood: face.surpriseLikelihood,
+              underExposedLikelihood: face.underExposedLikelihood,
+              blurredLikelihood: face.blurredLikelihood,
+              headwearLikelihood: face.headwearLikelihood
+          };
+      })
+    res.json(filteredResults);
   } catch (error) {
       console.error('ERROR:', error);
       res.status(500).send(error.message);
