@@ -1,0 +1,18 @@
+{
+  "name": "visionai",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "nodemon server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/vision": "^4.0.2",
+    "axios": "^1.6.1",
+    "express": "^4.18.2",
+    "nodemon": "^3.0.1"
+  }
+}
