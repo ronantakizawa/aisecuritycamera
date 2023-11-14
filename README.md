@@ -15,6 +15,7 @@ Hardware
 
 Server
 1. Copy and instantiate server
+-      git clone https://github.com/ronantakizawa/aisecuritycamera.git
 - git clone https://github.com/ronantakizawa/aisecuritycamera.git
 - cd aisecuritycamera
 - npm install
