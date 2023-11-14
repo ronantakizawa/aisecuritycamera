@@ -16,7 +16,7 @@ Hardware
 Server
 1. Copy and instantiate server
 -      git clone https://github.com/ronantakizawa/aisecuritycamera.git
--      cd aisecuritycamera
+-      cd aisecuritycamera/webserver
 -      npm install
 2. Fill the IP address of the ESP32-CAM in server.js
 3. Log into your Google Cloud account, and get a credentials.json file for your service account to allow API access
