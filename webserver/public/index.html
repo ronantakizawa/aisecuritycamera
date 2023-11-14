@@ -1,55 +1,98 @@
-<!DOCTYPE HTML><html>
+<!DOCTYPE HTML>
+<html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { text-align:center; }
-    .vert { margin-bottom: 10%; }
-    .hori{ margin-bottom: 0%; }
+    body { text-align: center; }
+    .container { display: flex; justify-content: start; width: 100%; }
+    .photo-container { margin-right: 20px; }
+    .analysis-results { margin-left: 20px; }
+    .loading { 
+      position: absolute; 
+      top: 50%; 
+      left: 50%; 
+      transform: translate(-50%, -50%);
+      background: url('loading.gif') no-repeat center center; 
+      display: none;
+      width: 100px;
+      height: 100px;
+    }
+    #photoContainer { position: relative; }
+    #photo { width: 80%; } /* Adjust the image size as needed */
   </style>
 </head>
 <body>
   <div id="container">
-    <h2>ESP32-CAM Last Photo</h2>
-    <p>It might take more than 5 seconds to capture a photo.</p>
+    <h2>AI Security Camera</h2>
+    <h3>Powered with ESP32CAM and Google Vision AI API</h3>
+    <p>Caution: Photos may take a while to render</p>
     <p>
-      <button onclick="rotatePhoto();">ROTATE</button>
-      <button onclick="capturePhoto()">REFRESH PAGE</button>
-      <button onclick="analyzePhoto()">ANALYZE PHOTO</button>
+      <button onclick="capturePhoto()">CAPTURE PHOTO</button>
+      <button onclick="objectScan()">OBJECT SCAN</button>
+      <button onclick="emotionScan()">EMOTION SCAN</button>
     </p>
   </div>
-  <div><img src="photo.jpg" id="photo" width="70%"></div>
-  <div id="analysisResults"></div>
-</body>
-<script>
-  var deg = 0;
-
-  function capturePhoto() {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', "/capture", true);
-    xhr.send();
-    xhr.onload = function() {
-      refreshPhoto();
-    };
-  }
-
-  function rotatePhoto() {
-    var img = document.getElementById("photo");
-    deg += 90;
-    if(isOdd(deg/90)){ document.getElementById("container").className = "vert"; }
-    else{ document.getElementById("container").className = "hori"; }
-    img.style.transform = "rotate(" + deg + "deg)";
-  }
-
-  function isOdd(n) { return Math.abs(n % 2) == 1; }
-
-  function analyzePhoto() {
-        fetch('/analyze-photo')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('analysisResults').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
-            })
-            .catch(error => console.error('Error:', error));
+  <div class="container">
+      <img src="photo.jpg" id="photo">
+      <div class="loading"></div>
+    <div id="analysisResults" class="analysis-results">
+      <h3>Results</h3>
+      <p id="analysisData">No Data</p>
+    </div>
+  </div>
+  <script>
+    function capturePhoto() {
+      showLoading();
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', "/capture", true);
+      xhr.send();
+      xhr.onload = function() {
+        refreshPhoto();
+      };
     }
 
-</script>
+  
+    function refreshPhoto() {
+      var img = document.getElementById("photo");
+      img.src = "photo.jpg?" + new Date().getTime();
+      hideLoading();
+    }
+  
+    function isOdd(n) { return Math.abs(n % 2) == 1; }
+  
+    function objectScan() {
+      fetch('/objectscan')
+        .then(response => response.json())
+        .then(data => {
+          console.log(data)
+          document.getElementById('analysisData').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        })
+        .catch(error => console.error('Error:', error));
+    }
+    function emotionScan() {
+      fetch('/emotionscan')
+        .then(response => response.json())
+        .then(data => {
+          console.log(data)
+          document.getElementById('analysisData').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        })
+        .catch(error => console.error('Error:', error));
+    }
+  
+    function showLoading() {
+      var loadingDiv = document.querySelector('.loading');
+      var image = document.getElementById("photo")
+      image.style["visibility"]="hidden";
+      loadingDiv.style.display = 'block';
+    }
+  
+    function hideLoading() {
+      var loadingDiv = document.querySelector('.loading');
+      var image = document.getElementById("photo");
+      loadingDiv.style.display = 'none';
+      image.style["visibility"]="visible";
+    }
+  
+  </script>
+</body>
 </html>
