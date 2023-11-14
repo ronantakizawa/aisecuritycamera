@@ -1,4 +1,9 @@
 # aisecuritycamera
+
+
+<img width="1110" alt="Screenshot 2023-11-14 at 14 41 53" src="https://github.com/ronantakizawa/aisecuritycamera/assets/71115970/19cdc36a-12d6-4d45-8842-0594f0b82573">
+
+
 An AI-powered security camera that analyzes footage using ESP32-CAM, Nodejs, and the Google Vision AI API. 
 
 This is a web app that does AI photo analysis with footage recorded by an ESP32-CAM locally. The web app can request the ESP-32 CAM connected to the device to take photos and send them back to the app. Once received, a user can then use Google's Vision AI API to scan the footage for object recognition and emotion recognition. 
@@ -30,7 +35,4 @@ App
 
 
 
-
-
-<img width="1110" alt="Screenshot 2023-11-14 at 14 41 53" src="https://github.com/ronantakizawa/aisecuritycamera/assets/71115970/19cdc36a-12d6-4d45-8842-0594f0b82573">
 
