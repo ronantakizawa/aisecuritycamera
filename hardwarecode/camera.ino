@@ -11,8 +11,8 @@
 #include <SPIFFS.h>
 
 // Replace with your network credentials
-const char* ssid = <SSID>;
-const char* password = <PASSWORD>;
+const char* ssid = "xx";
+const char* password = "ronantakizawa";
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -39,46 +39,6 @@ boolean takeNewPhoto = false;
 #define VSYNC_GPIO_NUM    25
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
-
-const char index_html[] PROGMEM = R"rawliteral(
-<!DOCTYPE HTML><html>
-<head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { text-align:center; }
-    .vert { margin-bottom: 10%; }
-    .hori{ margin-bottom: 0%; }
-  </style>
-</head>
-<body>
-  <div id="container">
-    <h2>ESP32-CAM Last Photo</h2>
-    <p>It might take more than 5 seconds to capture a photo.</p>
-    <p>
-      <button onclick="rotatePhoto();">ROTATE</button>
-      <button onclick="capturePhoto()">CAPTURE PHOTO</button>
-      <button onclick="location.reload();">REFRESH PAGE</button>
-    </p>
-  </div>
-  <div><img src="saved-photo" id="photo" width="70%"></div>
-</body>
-<script>
-  var deg = 0;
-  function capturePhoto() {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', "/capture", true);
-    xhr.send();
-  }
-  function rotatePhoto() {
-    var img = document.getElementById("photo");
-    deg += 90;
-    if(isOdd(deg/90)){ document.getElementById("container").className = "vert"; }
-    else{ document.getElementById("container").className = "hori"; }
-    img.style.transform = "rotate(" + deg + "deg)";
-  }
-  function isOdd(n) { return Math.abs(n % 2) == 1; }
-</script>
-</html>)rawliteral";
 
 void setup() {
   // Serial port for debugging purposes
@@ -131,31 +91,21 @@ void setup() {
 
   if (psramFound()) {
     config.frame_size = FRAMESIZE_QQVGA; //FRAMESIZE_QQVGA for low quality, FRAMESIZE_UXGA for high
-    config.jpeg_quality = 63; //Use 63 for low quality, 10 for high
+    config.jpeg_quality = 12; //Use 63 for low quality, 10 for high
     config.fb_count = 2;
   } else {
-    config.frame_size = FRAMESIZE_SVGA;
-    config.jpeg_quality = 63; //Use 63 for low quality
+    config.frame_size = FRAMESIZE_QQVGA;
+    config.jpeg_quality = 12; //Use 63 for low quality
     config.fb_count = 1;
   }
   // Camera init
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
-    Serial.printf("Camera init failed with error 0x%x", err);
     ESP.restart();
   }
 
-  // Route for root / web page
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-    request->send_P(200, "text/html", index_html);
-  });
-
-  server.on("/capture", HTTP_GET, [](AsyncWebServerRequest * request) {
-    takeNewPhoto = true;
-    request->send_P(200, "text/plain", "Taking Photo");
-  });
-
   server.on("/saved-photo", HTTP_GET, [](AsyncWebServerRequest * request) {
+    takeNewPhoto = true;
     request->send(SPIFFS, FILE_PHOTO, "image/jpg", false);
   });
 
@@ -186,29 +136,20 @@ void capturePhotoSaveSpiffs( void ) {
 
   do {
     // Take a photo with the camera
-    Serial.println("Taking a photo...");
 
     fb = esp_camera_fb_get();
     if (!fb) {
-      Serial.println("Camera capture failed");
       return;
     }
 
     // Photo file name
-    Serial.printf("Picture file name: %s\n", FILE_PHOTO);
     File file = SPIFFS.open(FILE_PHOTO, FILE_WRITE);
 
     // Insert the data in the photo file
     if (!file) {
-      Serial.println("Failed to open file in writing mode");
     }
     else {
       file.write(fb->buf, fb->len); // payload (image), payload length
-      Serial.print("The picture has been saved in ");
-      Serial.print(FILE_PHOTO);
-      Serial.print(" - Size: ");
-      Serial.print(file.size());
-      Serial.println(" bytes");
     }
     // Close the file
     file.close();
